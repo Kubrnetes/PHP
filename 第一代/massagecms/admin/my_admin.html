@@ -1,0 +1,109 @@
+<?php
+require ("../config/DB_Interface.php");
+require ("../config/Paginator.php");
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>留言板</title>
+    <script type="text/javascript" src="../../bootstrap/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../bootstrap/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../bootstrap/bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css" href="../../bootstrap/bootstrap-theme.min.css"/>
+</head>
+<body>
+<div class="col-md-2"></div>
+<div class="col-md-8">
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                        data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">留言系统</a>
+            </div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li><a href="#">查看留言</a></li>
+                </ul>
+                <form class="navbar-form navbar-left" action="../search.php" method="post" onsubmit="return my_data()">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="" id="search" name="search">
+                    </div>
+                    <button type="submit" class="btn btn-default">搜索留言</button>
+                </form>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="#"><?php @$session = $_SESSION["admin"]; echo $session;?></a></li>
+                    <li><a href="../delete_session.php">退出</a></li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+    <div class="row">
+        <div class="col-md-3">
+            <img src="../images/1.jpg" alt="图片" class="img-rounded" width="160px" height="160px">
+            <br><br>
+            欢迎：<?php echo $session; ?>
+        </div>
+        <div class="col-md-9">
+            <ul class="nav nav-tabs">
+                <ul class="nav nav-pills">
+                    <li role="presentation" class="active"><a href="./my_admin.php">操作留言</a></li>
+                    <li role="presentation"><a href="./delete_users.php">用户操作</a></li>
+                </ul>
+                <table class="table table-hover">
+                    <tr>
+                        <td class="col-lg-2" style="font-weight: bold">用户</td>
+                        <td class="col-lg-6" style="font-weight: bold">留言内容</td>
+                        <td class="col-lg-2" style="font-weight: bold">时间</td>
+                        <td class="col-lg-2" style="font-weight: bold">操作</td>
+                    </tr>
+                    <?php
+                    $Use_mysql = new DB();
+                    $sql = "select * from comment";
+                    $data_sql = $Use_mysql->get_datas($sql);
+                    $nums = count($data_sql);
+                    $NUM = 10;
+                    $page = isset($_GET['page']) ? $_GET['page'] : '1';
+                    $Page = array_splice($data_sql, ($page - 1) * $NUM, $NUM);
+                    $urlPattern = 'my_data.php?page=(:num)';
+                    $paginator = new Paginator($nums, $NUM, $page, $urlPattern);
+                    foreach ($Page as $key => $value){
+                    ?>
+                    <tr>
+                        <td class="col-lg-2"><?php echo $value["username"];?></td>
+                        <td class="col-lg-6"><?php echo $value["text"];?></td>
+                        <td class="col-lg-2"><?php echo $value["pub_date"];?></td>
+                        <td class="col-lg-2"><a href="../config/Use_mysql.php?id=<?php echo $value['comment_id'];?>">删除</a></td>
+                    </tr>
+                    <?php }
+            ?>
+                </table>
+            </ul>
+        </div>
+        <center><?php echo $paginator; // 操作按钮?></center>
+    </div>
+</div>
+<div class="col-md-2"></div>
+<nav class="navbar navbar-default navbar-fixed-bottom">
+    <div class="container">
+        开发者@Kubrnete
+    </div>
+</nav>
+<script type="text/javascript">
+    function my_data() {
+        var search = document.getElementById("search");
+        if (search.value === "" || search.value === null) {
+            return false;
+        }
+    }
+</script>
+</body>
+</html>

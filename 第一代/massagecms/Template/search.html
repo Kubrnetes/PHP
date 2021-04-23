@@ -1,0 +1,154 @@
+<?php
+//require ("./config/DB_Interface.php");
+require ("./config/DB_search.php");
+session_start();
+@$session = $_SESSION["users"];
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>留言板</title>
+    <script type="text/javascript" src="../bootstrap/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../bootstrap/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="../bootstrap/bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css" href="../bootstrap/bootstrap-theme.min.css"/>
+</head>
+<body>
+<div class="row">
+    <div class="col-md-2"></div>
+    <div class="col-md-8">
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+                <!-- Brand and toggle get grouped for better mobile display -->
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                            data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">留言系统</a>
+                </div>
+                <!-- Collect the nav links, forms, and other content for toggling -->
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                    <ul class="nav navbar-nav">
+                        <?php
+                            @$session = $_SESSION["users"];
+                            if(!isset($session)){
+                        ?>
+                        <li><a href="./message.php?sign=tourist">查看留言</a></li>
+                        <li><a href="./Write_message.php">我要留言</a></li>
+                        <?php
+                         }else{
+                         ?>
+                        <li><a href="./message.php">查看留言</a></li>
+                        <li><a href="./Write_message.php">我要留言</a></li>
+                        <?php
+                            }
+                        ?>
+                    </ul>
+                    <form class="navbar-form navbar-left" action="./search.php" method="post"
+                          onsubmit="return message()">
+                        <div class="form-group">
+                            <input type="text" class="form-control" placeholder="" id="search" name="search">
+                        </div>
+                        <button type="submit" class="btn btn-default">搜索留言</button>
+                    </form>
+                    <ul class="nav navbar-nav navbar-right">
+                        <?php
+                            if (isset($_SESSION["admin"])){
+                        ?>
+                            <li><a href="./admin/my_admin.php"><?php echo $_SESSION["admin"]; ?></a></li>
+                        <?php
+                            }elseif (isset($session)){
+                        ?>
+                            <li><a href="./my_data.php"><?php echo $session; ?></a></li>
+                        <?php
+                            }else{
+                         ?>
+                            <li><a href="./login.php">登录</a></li>
+                            <li><a href="./register.php">注册</a></li>
+                        <?php
+                            }
+                        ?>
+
+                        <?php
+                            if(isset($session)){
+                        ?>
+                        <li><a href="./delete_session.php">退出</a></li>
+                        <?php
+                         }
+                        ?>
+                    </ul>
+                </div><!-- /.navbar-collapse -->
+            </div><!-- /.container-fluid -->
+        </nav>
+       <ul class="nav nav-tabs" style="overflow: auto; height: 630px"> <!-- 局部滚动条-->
+            <li role="presentation" class="active" style="font-size: 25px"><a href="#">所有留言</a></li>
+            <table class="table table-hover">
+                <?php
+                    if (@$_SESSION["admin"]){
+                ?>
+                <tr>
+                    <td class="col-lg-2" style="font-weight: bold">用户</td>
+                    <td class="col-lg-6" style="font-weight: bold">留言内容</td>
+                    <td class="col-lg-2" style="font-weight: bold">时间</td>
+                    <td class="col-lg-2" style="font-weight: bold">操作</td>
+                </tr>
+                <?php
+                    @$data = $_POST["search"];
+                    $DB_search = new DB_search($data);
+                    $data = $DB_search->search();
+                    foreach ($data as $key => $value){
+                ?>
+
+                <tr>
+                    <td class="col-lg-2"><?php echo $value["username"];?></td>
+                    <td class="col-lg-6"><?php echo $value["text"];?></td>
+                    <td class="col-lg-2"><?php echo $value["pub_date"];?></td>
+                    <td class="col-lg-2"><a href="./config/Use_mysql.php?id=<?php echo $value['comment_id'];?>">删除</a></td>
+                </tr>
+
+                <?php }
+                    }else{
+                ?>
+                <tr>
+                    <td class="col-lg-3" style="font-weight: bold">用户</td>
+                    <td class="col-lg-7" style="font-weight: bold">留言内容</td>
+                    <td class="col-lg-2" style="font-weight: bold">时间</td>
+                </tr>
+                <?php @$data = $_POST["search"];
+                $DB_search = new DB_search($data);
+                $data = $DB_search->search();
+                foreach ($data as $key => $value){
+                ?>
+                <tr>
+                    <td class="col-lg-3"><?php echo $value["username"];?></td>
+                    <td class="col-lg-7"><?php echo $value["text"];?></td>
+                    <td class="col-lg-2"><?php echo $value["pub_date"];?></td>
+                </tr>
+                <?php }
+                }
+            ?>
+            </table>
+        </ul>
+    </div>
+    <div class="col-md-2"></div>
+</div>
+<nav class="navbar navbar-default navbar-fixed-bottom">
+    <div class="container">
+        开发者@Kubrnete
+    </div>
+</nav>
+<script type="text/javascript">
+    function message() {
+        var search = document.getElementById("search");
+        if (search.value === "" || search.value === null) {
+            return false;
+        }
+    }
+</script>
+</body>
+</html>
